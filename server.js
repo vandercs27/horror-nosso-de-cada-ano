@@ -2,7 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const axios = require('axios');
 const cors = require('cors');
-require('dotenv').config();
+
+// Carrega o .env apenas se estiver rodando localmente na sua máquina
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 
 const app = express();
 app.use(express.json());
