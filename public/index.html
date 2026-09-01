@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horror Nosso de Cada Ano</title>
+    <style>
+        :root { 
+            --bg-color: #0d0d0d; 
+            --accent-color: #e50914; 
+            --card-bg: #161616; 
+            --text-color: #f1f1f1; 
+            --footer-bg: #090909;
+        }
+        
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 40px 20px 0 20px; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        
+        header { 
+            text-align: center; 
+            margin-bottom: 40px; 
+        }
+
+        /* Estilização da Logo Profissional */
+        .logo-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .logo-icon {
+            font-size: 2.2rem;
+            filter: drop-shadow(0 0 10px rgba(229, 9, 20, 0.6));
+        }
+        
+        h1 { 
+            color: #fff; 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+            font-size: 2rem;
+            margin: 0;
+            text-shadow: 0 2px 10px rgba(229, 9, 20, 0.4);
+        }
+
+        h1 span {
+            color: var(--accent-color);
+        }
+
+        header p {
+            color: #888;
+            font-size: 0.95rem;
+            margin-top: 5px;
+        }
+        
+        .controls { 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            margin-bottom: 50px; 
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 8px;
+        }
+        
+        input, button { 
+            padding: 12px 16px; 
+            background: #1a1a1a; 
+            border: 1px solid #333; 
+            color: #fff; 
+            border-radius: 6px; 
+            font-family: inherit;
+        }
+
+        input {
+            width: 220px;
+        }
+        
+        button { 
+            background-color: var(--accent-color); 
+            cursor: pointer; 
+            border: none; 
+            font-weight: bold; 
+            transition: opacity 0.2s;
+        }
+        
+        button:hover { 
+            opacity: 0.85; 
+        }
+
+        .main-content {
+            flex: 1;
+        }
+        
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+            gap: 30px; 
+            width: 100%;
+            max-width: 1300px; 
+            margin: 0 auto 60px auto; 
+            box-sizing: border-box;
+        }
+        
+        .card { 
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 6px 18px rgba(0,0,0,0.7); 
+            display: flex; 
+            flex-direction: column; 
+            border: 1px solid #252525;
+            cursor: pointer;
+            transition: transform 0.25s ease, border-color 0.25s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent-color);
+        }
+        
+        .card img { 
+            width: 100%; 
+            height: 330px; 
+            object-fit: cover; 
+        }
+        
+        .card-content { 
+            padding: 16px; 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+        }
+        
+        .card h3 { 
+            margin: 8px 0 10px; 
+            font-size: 1rem; 
+            line-height: 1.3;
+        }
+        
+        .card p { 
+            font-size: 0.82rem; 
+            color: #aaa; 
+            margin-bottom: 12px; 
+            line-height: 1.4;
+        }
+
+        .rating {
+            color: #f5c518;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        /* Modal de Detalhes */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-content {
+            background: #141414;
+            border: 1px solid #333;
+            max-width: 800px;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+        }
+
+        .modal-header {
+            position: relative;
+            height: 250px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to top, #141414, transparent);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            border: none;
+            width: 35px; height: 35px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .close-btn:hover { background: var(--accent-color); }
+
+        .modal-body {
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .modal-body h2 { margin: 0 0 5px; color: #fff; font-size: 1.8rem; }
+        .modal-info { color: #888; font-size: 0.9rem; margin-bottom: 20px; display: flex; gap: 20px; flex-wrap: wrap; }
+        .modal-info span { color: #f1f1f1; }
+        .modal-synopsis { line-height: 1.6; color: #ccc; font-size: 0.95rem; margin-bottom: 10px; }
+
+        /* Rodapé Profissional */
+        footer {
+            background-color: var(--footer-bg);
+            border-top: 1px solid #222;
+            text-align: center;
+            padding: 25px 20px;
+            color: #777;
+            font-size: 0.85rem;
+            margin-top: auto;
+        }
+
+        footer p {
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-content">
+        <header>
+            <div class="logo-container">
+                <span class="logo-icon">💀</span>
+                <h1>Horror Nosso <span>De Cada Ano</span></h1>
+            </div>
+            <p>Explore o terror que marcou cada época e descubra cada pesadelo</p>
+        </header>
+
+        <div class="controls">
+            <div style="display:flex; gap:8px;">
+                <input type="number" id="yearInput" value="2024" placeholder="Digite o Ano">
+                <button onclick="fetchMoviesByYear()">Explorar Ano</button>
+            </div>
+            
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Pesquisar filme por nome...">
+                <button onclick="searchMoviesByName()">Buscar</button>
+            </div>
+        </div>
+
+        <div id="movieGrid" class="grid"></div>
+    </div>
+
+    <!-- Modal de Detalhes -->
+    <div id="movieModal" class="modal-overlay" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <div id="modalHeaderBg" class="modal-header"></div>
+            <div class="modal-body">
+                <h2 id="modalTitle"></h2>
+                <div class="modal-info">
+                    <div>📅 Estreia: <span id="modalReleaseDate"></span></div>
+                    <div>⭐ Média: <span id="modalRating"></span></div>
+                    <div>⏱️ Duração: <span id="modalRuntime"></span></div>
+                </div>
+                <h3>Sinopse</h3>
+                <p id="modalSynopsis" class="modal-synopsis"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer>
+        <p>&copy; 2026 Horror Nosso de Cada Ano. Todos os direitos reservados.</p>
+        <p style="margin-top: 6px;">Dados fornecidos por <a href="https://www.themoviedb.org" target="_blank">The Movie Database (TMDB)</a>.</p>
+    </footer>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+
+        document.getElementById('yearInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') fetchMoviesByYear();
+        });
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchMoviesByName();
+        });
+
+        async function fetchMoviesByYear() {
+            const year = document.getElementById('yearInput').value;
+            const grid = document.getElementById('movieGrid');
+            grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Invocando filmes do ano...</p>';
+
+            try {
+                const response = await fetch(`${API_URL}/movies/${year}`);
+                const movies = await response.json();
+                renderGrid(movies);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function searchMoviesByName() {
+            const query = document.getElementById('searchInput').value.trim();
+            if(!query) return;
+
+            const grid = document.getElementById('movieGrid');
+            grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Buscando nos arquivos sombrios...</p>';
+
+            try {
+                const response = await fetch(`${API_URL}/search?query=${encodeURIComponent(query)}`);
+                const movies = await response.json();
+                renderGrid(movies);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderGrid(movies) {
+            const grid = document.getElementById('movieGrid');
+            grid.innerHTML = '';
+            
+            if(movies.length === 0) {
+                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Nenhum registro encontrado.</p>';
+                return;
+            }
+
+            movies.forEach(movie => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => openTmdbModal(movie.id);
+
+                card.innerHTML = `
+                    <img src="${movie.posterUrl}" alt="${movie.title}">
+                    <div class="card-content">
+                        <div>
+                            ${movie.imdbRating ? `<span class="rating">⭐ ${movie.imdbRating} / 10</span>` : ''}
+                            <h3>${movie.title} (${movie.releaseYear})</h3>
+                            <p>${movie.synopsis ? movie.synopsis.substring(0, 80) + '...' : 'Sem sinopse.'}</p>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        async function openTmdbModal(id) {
+            try {
+                const res = await fetch(`${API_URL}/movie/${id}`);
+                const movie = await res.json();
+                
+                document.getElementById('modalTitle').innerText = movie.title;
+                document.getElementById('modalReleaseDate').innerText = movie.releaseDate;
+                document.getElementById('modalRating').innerText = `${movie.imdbRating} / 10`;
+                document.getElementById('modalRuntime').innerText = movie.runtime;
+                document.getElementById('modalSynopsis').innerText = movie.synopsis;
+                document.getElementById('modalHeaderBg').style.backgroundImage = movie.backdropUrl ? `url(${movie.backdropUrl})` : `url(${movie.posterUrl})`;
+                
+                document.getElementById('movieModal').style.display = 'flex';
+            } catch (e) {
+                alert('Erro ao carregar detalhes.');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('movieModal').style.display = 'none';
+        }
+
+        fetchMoviesByYear();
+    </script>
+</body>
+</html>
