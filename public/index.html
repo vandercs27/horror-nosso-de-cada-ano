@@ -62,23 +62,24 @@
             margin-top: 5px;
         }
         
-      .controls { 
+     .controls { 
             display: flex; 
-            justify-content: center; 
             gap: 10px; 
             margin-bottom: 40px; 
-            flex-wrap: wrap; /* Quebra para a linha de baixo no celular */
+            flex-wrap: wrap; 
             width: 100%;
             max-width: 900px;
             margin-left: auto;
             margin-right: auto;
         }
 
-        .search-group {
+        .search-box {
             display: flex;
+            margin:0 auto;
+            padding: 0 auto;
             gap: 10px;
-            flex: 1; /* Ocupa o espaço disponível */
-            min-width: 300px; /* Define o tamanho mínimo para desktop */
+            flex: 1;
+            min-width: 320px;
         }
         
         input, button { 
@@ -89,23 +90,23 @@
             border-radius: 6px; 
             font-family: inherit;
             box-sizing: border-box;
+            font-size: 0.95rem;
         }
 
-        /* O input ocupa todo o espaço dentro do seu grupo */
         .search-group input {
             flex: 1;
             width: 100%;
         }
         
-        /* Define um tamanho base consistente para os botões, mas permite que se ajustem */
-        button { 
+        /* Força os dois botões a terem exatamente o mesmo tamanho fixo */
+       button { 
             background-color: var(--accent-color); 
             cursor: pointer; 
             border: none; 
             font-weight: bold; 
             transition: opacity 0.2s;
             white-space: nowrap;
-            /* Removido o min-width fixo grande para evitar overflow */
+            width: auto; /* Deixa o botão encolher para acompanhar o tamanho do texto */
         }
         
         button:hover { 
@@ -286,7 +287,7 @@
         <div class="controls">
             <div style="display:flex; gap:8px;">
                 <input type="number" id="yearInput" value="2024" placeholder="Digite o Ano">
-                <button onclick="fetchMoviesByYear()">Explorar Ano</button>
+                <button onclick="fetchMoviesByYear()">Explorar</button>
             </div>
             
             <div class="search-box">
