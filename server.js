@@ -143,6 +143,32 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
+// Rota para buscar trailers e vídeos do filme
+app.get('/api/movie/:id/videos', async (req, res) => {
+    try {
+        const movieId = req.params.id;
+        const response = await axios.get(`https://api.themoviedb.org/3/movie/${movieId}/videos`, {
+            params: {
+                api_key: process.env.TMDB_API_KEY,
+                language: 'pt-BR'
+            }
+        });
+
+        // Procura primeiro por um trailer oficial em português, senão pega qualquer vídeo do YouTube
+        const videos = response.data.results;
+        let trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+        
+        if (!trailer && videos.length > 0) {
+            trailer = videos.find(v => v.site === 'YouTube');
+        }
+
+        res.json(trailer ? { key: trailer.key, name: trailer.name } : null);
+    } catch (error) {
+        console.error('Erro ao buscar trailer:', error.message);
+        res.status(500).json({ error: 'Erro ao buscar trailer' });
+    }
+});
+
 // Rota Admin: Cadastrar novo filme futuro
 app.post('/api/admin/movies', async (req, res) => {
   try {
