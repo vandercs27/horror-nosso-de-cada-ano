@@ -65,9 +65,9 @@
       .controls { 
             display: flex; 
             justify-content: center; 
-            gap: 15px; 
+            gap: 10px; 
             margin-bottom: 40px; 
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* Quebra para a linha de baixo no celular */
             width: 100%;
             max-width: 900px;
             margin-left: auto;
@@ -77,8 +77,8 @@
         .search-group {
             display: flex;
             gap: 10px;
-            flex: 1;
-            min-width: 300px;
+            flex: 1; /* Ocupa o espaço disponível */
+            min-width: 300px; /* Define o tamanho mínimo para desktop */
         }
         
         input, button { 
@@ -89,16 +89,15 @@
             border-radius: 6px; 
             font-family: inherit;
             box-sizing: border-box;
-            font-size: 0.95rem;
         }
 
-        /* Faz o campo de texto ocupar o espaço flexível proporcionalmente */
+        /* O input ocupa todo o espaço dentro do seu grupo */
         .search-group input {
             flex: 1;
             width: 100%;
         }
         
-        /* Define um tamanho base consistente para os botões */
+        /* Define um tamanho base consistente para os botões, mas permite que se ajustem */
         button { 
             background-color: var(--accent-color); 
             cursor: pointer; 
@@ -106,7 +105,7 @@
             font-weight: bold; 
             transition: opacity 0.2s;
             white-space: nowrap;
-            min-width: 130px;
+            /* Removido o min-width fixo grande para evitar overflow */
         }
         
         button:hover { 
