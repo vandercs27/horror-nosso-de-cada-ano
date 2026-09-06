@@ -70,7 +70,7 @@
             width: 100%;
             max-width: 900px;
             margin-left: auto;
-            margin-right:200px ;
+            margin-right:175px ;
         }
 
         .search-box {
@@ -314,6 +314,14 @@
                 <h3>Sinopse</h3>
                 <p id="modalSynopsis" class="modal-synopsis"></p>
                 <!-- Cole isso dentro de .modal-body, logo abaixo da sinopse -->
+
+                <!-- Cole isso dentro do modal onde ficam as informações (ex: logo abaixo do tempo de duração ou da sinopse) -->
+                 <div style="margin: 10px 0; color: #ccc; font-size: 0.95rem;">
+    <strong>Direção:</strong> <span id="modalDirector">Carregando...</span>
+</div>
+<div style="margin: 10px 0; color: #ccc; font-size: 0.95rem;">
+    <strong>Elenco principal:</strong> <span id="modalCast">Carregando...</span>
+</div>
 <div id="trailerContainer" style="margin-top: 20px; display: none;">
     <h3>Trailer Oficial</h3>
     <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;">
@@ -409,6 +417,8 @@
                 document.getElementById('modalRating').innerText = `${movie.imdbRating} / 10`;
                 document.getElementById('modalRuntime').innerText = movie.runtime;
                 document.getElementById('modalSynopsis').innerText = movie.synopsis;
+                document.getElementById('modalDirector').innerText = movie.director;
+                document.getElementById('modalCast').innerText = movie.cast;
                 document.getElementById('modalHeaderBg').style.backgroundImage = movie.backdropUrl ? `url(${movie.backdropUrl})` : `url(${movie.posterUrl})`;
                 // Buscar o trailer do filme
         const trailerRes = await fetch(`${API_URL}/movie/${id}/videos`);

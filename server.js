@@ -82,67 +82,112 @@ app.get('/api/movies/:year', async (req, res) => {
 
 // Rota para buscar detalhes específicos de um filme pelo ID na TMDB
 app.get('/api/movie/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const tmdbApiKey = process.env.TMDB_API_KEY;
-    const response = await axios.get(`https://api.themoviedb.org/3/movie/${id}`, {
-      params: {
-        api_key: tmdbApiKey,
-        language: 'pt-BR'
-      }
-    });
+    try {
+        const movieId = req.params.id;
+        
+        const [movieRes, creditsRes] = await Promise.all([
+            axios.get(`https://api.themoviedb.org/3/movie/${movieId}`, {
+                params: { api_key: process.env.TMDB_API_KEY, language: 'pt-BR' }
+            }),
+            axios.get(`https://api.themoviedb.org/3/movie/${movieId}/credits`, {
+                params: { api_key: process.env.TMDB_API_KEY, language: 'pt-BR' }
+            })
+        ]);
 
-    const movie = response.data;
-    res.json({
-      id: movie.id,
-      title: movie.title,
-      originalTitle: movie.original_title,
-      releaseDate: movie.release_date ? movie.release_date.split('-').reverse().join('/') : 'Data não informada',
-      synopsis: movie.overview || 'Sinopse indisponível.',
-      posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://via.placeholder.com/500x750?text=Sem+Poster',
-      backdropUrl: movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : null,
-      imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 0,
-      runtime: movie.runtime ? `${movie.runtime} minutos` : 'Duração não informada'
-    });
-  } catch (error) {
-    res.status(404).json({ error: 'Filme não encontrado.' });
-  }
+        const movie = movieRes.data;
+        const castList = creditsRes.data.cast ? creditsRes.data.cast.slice(0, 5).map(actor => actor.name).join(', ') : 'Não informado';
+
+        res.json({
+            id: movie.id,
+            title: movie.title,
+            releaseDate: movie.release_date ? movie.release_date.split('-')[0] : 'N/D',
+            imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
+            runtime: movie.runtime ? `${movie.runtime} min` : 'N/D',
+            synopsis: movie.overview || 'Sinopse indisponível em português.',
+            posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
+            backdropUrl: movie.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}` : null,
+            cast: castList // Propriedade essencial para o modal não dar undefined
+        });
+    } catch (error) {
+        console.error('Erro nos detalhes:', error.message);
+        res.status(500).json({ error: 'Erro ao buscar detalhes' });
+    }
 });
 
 // Rota para pesquisar filmes pelo título digitado na barra de busca
+// Rota de busca estritamente filtrada para o gênero de terror (ID 27)
 app.get('/api/search', async (req, res) => {
-  const { query } = req.query;
-  try {
-    const tmdbApiKey = process.env.TMDB_API_KEY;
-    if (!tmdbApiKey || !query) {
-      return res.json([]);
+    try {
+        const query = req.query.query;
+        const response = await axios.get('https://api.themoviedb.org/3/search/movie', {
+            params: {
+                api_key: process.env.TMDB_API_KEY,
+                query: query,
+                language: 'pt-BR'
+            }
+        });
+
+        // Filtra garantindo que o filme realmente contenha o gênero de terror (27) na lista de gêneros dele
+        const horrorMovies = response.data.results.filter(movie => 
+            movie.genre_ids && movie.genre_ids.includes(27)
+        );
+
+        const movies = horrorMovies.map(movie => ({
+            id: movie.id,
+            title: movie.title,
+            releaseDate: movie.release_date ? movie.release_date.split('-')[0] : 'N/D',
+            imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
+            posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
+            synopsis: movie.overview || 'Sinopse indisponível em português.'
+        }));
+
+        res.json(movies);
+    } catch (error) {
+        console.error('Erro na busca:', error.message);
+        res.status(500).json({ error: 'Erro ao buscar filmes' });
     }
-
-    const response = await axios.get(`https://api.themoviedb.org/3/search/movie`, {
-      params: {
-        api_key: tmdbApiKey,
-        query: query,
-        language: 'pt-BR'
-      }
-    });
-
-    // Filtra opcionalmente para garantir que traga foco de terror ou retorna os resultados encontrados
-    const movies = response.data.results.map(movie => ({
-      id: movie.id,
-      title: movie.title,
-      releaseYear: movie.release_date ? movie.release_date.split('-')[0] : 'N/A',
-      synopsis: movie.overview || 'Sinopse indisponível.',
-      posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://via.placeholder.com/500x750?text=Sem+Poster',
-      imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 0,
-      isUpcoming: false
-    }));
-
-    res.json(movies);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao pesquisar filmes.' });
-  }
 });
 
+// Rota de detalhes incluindo Diretor e Elenco
+app.get('/api/movie/:id', async (req, res) => {
+    try {
+        const movieId = req.params.id;
+        
+        const [movieRes, creditsRes] = await Promise.all([
+            axios.get(`https://api.themoviedb.org/3/movie/${movieId}`, {
+                params: { api_key: process.env.TMDB_API_KEY, language: 'pt-BR' }
+            }),
+            axios.get(`https://api.themoviedb.org/3/movie/${movieId}/credits`, {
+                params: { api_key: process.env.TMDB_API_KEY, language: 'pt-BR' }
+            })
+        ]);
+
+        const movie = movieRes.data;
+        const credits = creditsRes.data;
+
+        // Extração exata baseada na especificação do TMDb
+        const castList = credits.cast ? credits.cast.slice(0, 5).map(a => a.name).join(', ') : 'Não informado';
+        
+        const directorObj = credits.crew ? credits.crew.find(person => person.job === 'Director') : null;
+        const directorName = directorObj ? directorObj.name : 'Não informado';
+
+        res.json({
+            id: movie.id,
+            title: movie.title,
+            releaseDate: movie.release_date ? movie.release_date.split('-')[0] : 'N/D',
+            imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
+            runtime: movie.runtime ? `${movie.runtime} min` : 'N/D',
+            synopsis: movie.overview || 'Sinopse indisponível em português.',
+            posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
+            backdropUrl: movie.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}` : null,
+            cast: castList,
+            director: directorName
+        });
+    } catch (error) {
+        console.error('Erro nos detalhes:', error.message);
+        res.status(500).json({ error: 'Erro ao buscar detalhes' });
+    }
+});
 // Rota para buscar trailers e vídeos do filme
 app.get('/api/movie/:id/videos', async (req, res) => {
     try {
@@ -168,6 +213,8 @@ app.get('/api/movie/:id/videos', async (req, res) => {
         res.status(500).json({ error: 'Erro ao buscar trailer' });
     }
 });
+
+
 
 // Rota Admin: Cadastrar novo filme futuro
 app.post('/api/admin/movies', async (req, res) => {
