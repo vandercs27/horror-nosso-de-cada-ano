@@ -116,6 +116,53 @@
         .main-content {
             flex: 1;
         }
+
+        #dailyHighlightContainer {
+            max-width: 900px;
+            margin: 0 auto 40px auto;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+
+        #highlightCard {
+            background: #161616;
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        #highlightCard:hover {
+            border-color: var(--accent-color);
+        }
+
+        #highlightPoster {
+            width: 140px;
+            min-width: 140px;
+            object-fit: cover;
+        }
+
+        /* Área de texto interna com mais respiro */
+        #highlightCard > div {
+            padding: 22px 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Responsivo para celular: o poster vai para cima se faltar espaço */
+        @media (max-width: 600px) {
+            #highlightCard {
+                flex-direction: column;
+            }
+            #highlightPoster {
+                width: 100%;
+                height: 200px;
+            }
+        }
         
         .grid { 
             display: grid; 
@@ -296,6 +343,18 @@
             </div>
         </div>
 
+        <div id="dailyHighlightContainer" style="max-width: 900px; margin: 0 auto 40px auto; padding: 0 15px; display: none;">
+    <h3 style="color: var(--accent-color); margin-bottom: 15px;">💀 Destaque de Hoje no Terror</h3>
+    <div id="highlightCard" onclick="" style="background: #161616; border: 1px solid #333; border-radius: 8px; overflow: hidden; display: flex; flex-direction: row; cursor: pointer; transition: transform 0.2s;">
+        <img id="highlightPoster" src="" alt="Poster" style="width: 150px; object-fit: cover;">
+        <div style="padding: 20px; display: flex; flexDirection: column; justify-content: center;">
+            <span id="highlightBadge" style="background: var(--accent-color); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; width: fit-content; margin-bottom: 8px; font-weight: bold;"></span>
+            <h4 id="highlightTitle" style="color: #fff; margin: 0 0 8px 0; font-size: 1.2rem;"></h4>
+            <p id="highlightSynopsis" style="color: #aaa; font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"></p>
+        </div>
+    </div>
+</div>
+
         <div id="movieGrid" class="grid"></div>
     </div>
 
@@ -349,6 +408,8 @@
             if (e.key === 'Enter') searchMoviesByName();
         });
 
+
+
         async function fetchMoviesByYear() {
             const year = document.getElementById('yearInput').value;
             const grid = document.getElementById('movieGrid');
@@ -378,6 +439,32 @@
                 console.error(err);
             }
         }
+
+        async function loadDailyHighlight() {
+    try {
+        const res = await fetch(`${API_URL}/daily-highlight`);
+        if (!res.ok) return;
+        const movie = await res.json();
+
+        // Como o backend já manda a data formatada, usamos direto
+        const year = movie.releaseDate.split('-')[0] || 'N/D';
+
+        document.getElementById('highlightPoster').src = movie.posterUrl;
+        document.getElementById('highlightTitle').innerText = `${movie.title} (${year})`;
+        document.getElementById('highlightBadge').innerText = `Estreia: ${movie.releaseDate} (${movie.yearsAgo})`;
+        document.getElementById('highlightSynopsis').innerText = movie.synopsis;
+        
+        document.getElementById('highlightCard').onclick = () => openTmdbModal(movie.id);
+        document.getElementById('dailyHighlightContainer').style.display = 'block';
+    } catch (e) {
+        console.error('Erro ao carregar destaque diário', e);
+    }
+}
+
+// Chame ela no carregamento da página
+window.addEventListener('DOMContentLoaded', () => {
+    loadDailyHighlight();
+});
 
         function renderGrid(movies) {
             const grid = document.getElementById('movieGrid');
@@ -411,6 +498,22 @@
             try {
                 const res = await fetch(`${API_URL}/movie/${id}`);
                 const movie = await res.json();
+                
+               // Exemplo de como deve estar dentro da sua função que renderiza os filmes:
+let formattedDate = 'N/D';
+if (movie.releaseDate) {
+    // Se a data vier como "YYYY-MM-DD" ou apenas o ano "YYYY"
+    const parts = movie.releaseDate.split('-');
+    if (parts.length === 3) {
+        formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`; // Vira DD/MM/YYYY
+    } else {
+        formattedDate = movie.releaseDate; // Se já for só o ano ou outro formato
+    }
+}
+
+// Depois, use 'formattedDate' no HTML do card:
+// Ex: <span class="movie-date">${formattedDate}</span>
+                
                 
                 document.getElementById('modalTitle').innerText = movie.title;
                 document.getElementById('modalReleaseDate').innerText = movie.releaseDate;

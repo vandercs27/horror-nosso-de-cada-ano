@@ -72,6 +72,56 @@ app.get('/api/movies/:year', async (req, res) => {
       }
     }
 
+    // rota para destaque do dia
+   app.get('/api/daily-highlight', async (req, res) => {
+    try {
+        const response = await axios.get('https://api.themoviedb.org/3/discover/movie', {
+            params: {
+                api_key: process.env.TMDB_API_KEY,
+                with_genres: '27',
+                sort_by: 'vote_average.desc',
+                'vote_count.gte': 100,
+                language: 'pt-BR',
+                page: 1
+            }
+        });
+
+        const movies = response.data.results || [];
+        let highlight = movies.length > 0 ? movies[Math.floor(Math.random() * Math.min(movies.length, 10))] : null;
+
+        if (!highlight) {
+            return res.status(404).json({ error: 'Nenhum destaque encontrado' });
+        }
+
+        const releaseYear = new Date(highlight.release_date).getFullYear();
+        const currentYear = new Date().getFullYear();
+        const yearsAgo = currentYear - releaseYear;
+
+        // Formata a data para DD/MM/AAAA aqui no backend para garantir
+        let formattedDate = 'N/D';
+        if (highlight.release_date) {
+            const parts = highlight.release_date.split('-');
+            if (parts.length === 3) {
+                formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+        }
+
+        res.json({
+            id: highlight.id,
+            title: highlight.title,
+            releaseDate: formattedDate,
+            yearsAgo: yearsAgo > 0 ? `${yearsAgo} anos atrás` : 'Lançamento recente',
+            imdbRating: highlight.vote_average ? highlight.vote_average.toFixed(1) : 'N/A',
+            synopsis: highlight.overview || 'Sinopse indisponível.',
+            posterUrl: highlight.poster_path ? `https://image.tmdb.org/t/p/w500${highlight.poster_path}` : null,
+            backdropUrl: highlight.backdrop_path ? `https://image.tmdb.org/t/p/w1280${highlight.backdrop_path}` : null
+        });
+    } catch (error) {
+        console.error('Erro no destaque do dia:', error.message);
+        res.status(500).json({ error: 'Erro ao carregar destaque' });
+    }
+});
+
     // Retorna a união do painel admin com a TMDB
     res.json([...localMovies, ...tmdbMovies]);
   } catch (error) {
@@ -95,18 +145,27 @@ app.get('/api/movie/:id', async (req, res) => {
         ]);
 
         const movie = movieRes.data;
-        const castList = creditsRes.data.cast ? creditsRes.data.cast.slice(0, 5).map(actor => actor.name).join(', ') : 'Não informado';
+        const credits = creditsRes.data;
+
+        // Processa o elenco principal
+        const castList = credits.cast ? credits.cast.slice(0, 5).map(actor => actor.name).join(', ') : 'Não informado';
+
+        // Processa o diretor com segurança
+        const crew = credits.crew || [];
+        const directorObj = crew.find(p => p.job === 'Director' || p.job === 'Diretor');
+        const directorName = directorObj ? directorObj.name : 'Não informado';
 
         res.json({
             id: movie.id,
             title: movie.title,
-            releaseDate: movie.release_date ? movie.release_date.split('-')[0] : 'N/D',
+            releaseDate: movie.release_date || 'N/D', // Data completa sem cortes
             imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
             runtime: movie.runtime ? `${movie.runtime} min` : 'N/D',
             synopsis: movie.overview || 'Sinopse indisponível em português.',
             posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
             backdropUrl: movie.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}` : null,
-            cast: castList // Propriedade essencial para o modal não dar undefined
+            cast: castList,
+            director: directorName
         });
     } catch (error) {
         console.error('Erro nos detalhes:', error.message);
