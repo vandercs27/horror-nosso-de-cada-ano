@@ -333,9 +333,9 @@
 
         <div class="controls">
             <div style="display:flex; gap:8px;">
-                <input type="number" id="yearInput" value="2024" placeholder="Digite o Ano">
-                <button onclick="fetchMoviesByYear()">Explorar</button>
-            </div>
+    <input type="number" id="yearInput" placeholder="Digite o Ano">
+    <button onclick="fetchMoviesByYear()">Explorar</button>
+</div>
             
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="Pesquisar filme por nome...">
@@ -549,6 +549,15 @@ if (movie.releaseDate) {
         }
 
         fetchMoviesByYear();
+
+        window.addEventListener('DOMContentLoaded', () => {
+    // Define o ano atual no input
+    const currentYear = new Date().getFullYear();
+    document.getElementById('yearInput').value = currentYear;
+    
+    // Chama a função para buscar os filmes do ano atual automaticamente
+    fetchMoviesByYear();
+});
     </script>
 </body>
 </html>

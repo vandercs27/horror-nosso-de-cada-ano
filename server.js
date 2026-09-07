@@ -191,14 +191,17 @@ app.get('/api/search', async (req, res) => {
             movie.genre_ids && movie.genre_ids.includes(27)
         );
 
-        const movies = horrorMovies.map(movie => ({
-            id: movie.id,
-            title: movie.title,
-            releaseDate: movie.release_date ? movie.release_date.split('-')[0] : 'N/D',
-            imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
-            posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
-            synopsis: movie.overview || 'Sinopse indisponível em português.'
-        }));
+        // Exemplo aplicado na rota de busca ou listagem
+const movies = response.data.results
+    .filter(movie => movie.vote_count >= 10) // Exige pelo menos 10 votos para a nota ser considerada
+    .map(movie => ({
+        id: movie.id,
+        title: movie.title,
+        releaseDate: movie.release_date || 'N/D',
+        imdbRating: movie.vote_average && movie.vote_average > 0 ? movie.vote_average.toFixed(1) : 'Sem nota',
+        posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
+        synopsis: movie.overview || 'Sinopse indisponível em português.'
+    }));
 
         res.json(movies);
     } catch (error) {
